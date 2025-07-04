@@ -32,7 +32,7 @@ def get_auth_url() -> str:
         "https://auth.mercadolivre.com.br/authorization"
         f"?response_type=code"
         f"&client_id={CLIENT_ID}"
-        f"&redirect_uri={REDIRECT_URI}"
+        f"&redirect_uri=https%3A%2F%2Fcyberdock.onrender.com%2F?nexus_auth%3Dsuccess"
     )
 
 

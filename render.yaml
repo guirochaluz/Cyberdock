@@ -21,3 +21,5 @@ services:
         value: "Giguisa*"
       - key: COOKIE_SECRET
         value: "lYXk6saqrn957gFS56qT-zlZdTdASs6_KKykWMYukJ8"
+      - key: PYTHON_VERSION
+        value: "3.12"

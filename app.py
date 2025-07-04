@@ -278,8 +278,6 @@ def render_add_account_button():
 
 from streamlit_option_menu import option_menu
 
-from streamlit_option_menu import option_menu
-
 def render_sidebar():
     # impede quebra de linha nos links
     st.sidebar.markdown("""

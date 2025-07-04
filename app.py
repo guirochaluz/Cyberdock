@@ -132,23 +132,22 @@ st.markdown("""
 
 # ----------------- OAuth Callback -----------------
 def ml_callback():
-    """Trata o callback OAuth — envia o code ao backend, salva tokens e redireciona."""
     code = st.query_params.get("code", [None])[0]
     if not code:
         st.error("⚠️ Código de autorização não encontrado.")
         return
-    st.success("✅ Código recebido. Processando autenticação...")
+
     resp = requests.post(f"{BACKEND_URL}/auth/callback", json={"code": code})
-    if resp.ok:
-        data = resp.json()                   # {"user_id": "...", ...}
-        salvar_tokens_no_banco(data)
-        st.cache_data.clear()             # limpa cache para puxar vendas novas
-        st.experimental_set_query_params(account=data["user_id"])
-        st.session_state["conta"] = data["user_id"]
-        st.success("✅ Conta ML autenticada com sucesso!")
-        st.rerun()
-    else:
-        st.error(f"❌ Falha na autenticação: {resp.text}")
+    if not resp.ok:
+        st.error(f"❌ Falha ao autenticar conta: {resp.status_code} — {resp.text}")
+        return
+
+    data = resp.json()
+    salvar_tokens_no_banco(data)
+    st.experimental_set_query_params(account=data["user_id"])
+    st.session_state["conta"] = data["user_id"]
+    st.success("✅ Conta ML autenticada com sucesso!")
+    st.rerun()
 
 # ----------------- Salvando Tokens -----------------
 def salvar_tokens_no_banco(data: dict):
@@ -254,13 +253,14 @@ def carregar_vendas(conta_id: Optional[str] = None) -> pd.DataFrame:
     return df
 
 # ----------------- Componentes de Interface -----------------
+from urllib.parse import urlencode
+
 def render_add_account_button():
-    # agora com ML_CLIENT_ID e redirect_uri completos
-    login_url = (
-      f"{BACKEND_URL}/ml-login"
-      f"?client_id={ML_CLIENT_ID}"
-      f"&redirect_uri={FRONTEND_URL}/?nexus_auth=success"
-    )
+    params = {
+        "client_id": ML_CLIENT_ID,
+        "redirect_uri": f"{FRONTEND_URL}/?nexus_auth=success"
+    }
+    login_url = f"{BACKEND_URL}/ml-login?{urlencode(params)}"
     st.markdown(f"""
       <a href="{login_url}">
         <button style="
@@ -275,6 +275,7 @@ def render_add_account_button():
         </button>
       </a>
     """, unsafe_allow_html=True)
+
 
 from streamlit_option_menu import option_menu
 

@@ -256,11 +256,7 @@ def carregar_vendas(conta_id: Optional[str] = None) -> pd.DataFrame:
 from urllib.parse import urlencode
 
 def render_add_account_button():
-    params = {
-        "client_id": ML_CLIENT_ID,
-        "redirect_uri": f"{FRONTEND_URL}/?nexus_auth=success"
-    }
-    login_url = f"{BACKEND_URL}/ml-login?{urlencode(params)}"
+    login_url = f"{BACKEND_URL}/ml-login"
     st.markdown(f"""
       <a href="{login_url}">
         <button style="

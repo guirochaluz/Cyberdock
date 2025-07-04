@@ -258,19 +258,18 @@ from urllib.parse import urlencode
 def render_add_account_button():
     login_url = f"{BACKEND_URL}/ml-login"
     st.markdown(f"""
-      <a href="{login_url}" target="_self">
-        <button style="
-          background-color:#4CAF50;
-          color:white;
-          border:none;
-          padding:10px;
-          border-radius:5px;
-          margin-bottom:10px;
-        ">
-          ➕ Adicionar Conta Mercado Livre
-        </button>
-      </a>
+    <button onclick="window.location.href='{login_url}';" style="
+      background-color:#4CAF50;
+      color:white;
+      border:none;
+      padding:10px;
+      border-radius:5px;
+      margin-bottom:10px;
+    ">
+      ➕ Adicionar Conta Mercado Livre
+    </button>
     """, unsafe_allow_html=True)
+
 
 from streamlit_option_menu import option_menu
 

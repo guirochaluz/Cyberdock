@@ -24,7 +24,7 @@ ML_CLIENT_ID   = os.getenv("ML_CLIENT_ID")
 # 2) Agora sim importe o Streamlit e configure a página _antes_ de qualquer outra chamada st.*
 import streamlit as st
 st.set_page_config(
-    page_title="NEXUS Group",
+    page_title="Cyber Dock",
     page_icon="favicon.png",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -278,79 +278,43 @@ def render_add_account_button():
 
 from streamlit_option_menu import option_menu
 
+from streamlit_option_menu import option_menu
+
 def render_sidebar():
-    # --- Injetar CSS para impedir wrap nos itens do menu ---
-    st.sidebar.markdown(
-        """
-        <style>
-          /* Aplica apenas aos links do option_menu dentro da sidebar */
-          [data-testid="stSidebar"] .nav-link {
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-          }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    # impede quebra de linha nos links
+    st.sidebar.markdown("""
+      <style>
+        [data-testid="stSidebar"] .nav-link {
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+      </style>
+    """, unsafe_allow_html=True)
 
     with st.sidebar:
         selected = option_menu(
             menu_title=None,
-            options=[
-                "Dashboard",
-                "Contas Cadastradas",
-                "Relatórios",
-                "Expedição",
-                "Gestão de SKU",
-                "Gestão de Despesas",
-                "Painel de Metas",
-                "Gestão de Anúncios",
-                "Configurações"
-            ],
-            icons=[
-                "house",
-                "person-up",
-                "file-earmark-text",
-                "collection-fill",
-                "box-seam",
-                "currency-dollar",
-                "bar-chart-line",
-                "bullseye",
-                "gear"
-            ],
+            options=["Dashboard", "Contas Cadastradas", "Relatórios", "Expedição"],
+            icons=["house", "person-up", "file-earmark-text", "collection-fill"],
             menu_icon="list",
             default_index=[
                 "Dashboard",
                 "Contas Cadastradas",
                 "Relatórios",
-                "Expedição",
-                "Gestão de SKU",
-                "Gestão de Despesas",
-                "Painel de Metas",
-                "Gestão de Anúncios",
-                "Configurações"
+                "Expedição"
             ].index(st.session_state.get("page", "Dashboard")),
             orientation="vertical",
             styles={
-                "container": {
-                    "padding": "0",
-                    "background-color": "#161b22"
-                },
-                "icon": {
-                    "color": "#2ecc71",
-                    "font-size": "18px"
-                },
-                "nav-link": {
+                "container": {"padding": "0", "background-color": "#161b22"},
+                "icon":      {"color": "#2ecc71", "font-size": "18px"},
+                "nav-link":  {
                     "font-size": "16px",
                     "text-align": "left",
                     "margin": "4px 0",
                     "color": "#fff",
                     "background-color": "transparent",
-                    "white-space": "nowrap"  # impede quebra
-                },
-                "nav-link:hover": {
-                    "background-color": "#27ae60"
+                    "white-space": "nowrap"
                 },
                 "nav-link-selected": {
                     "background-color": "#2ecc71",
@@ -358,9 +322,10 @@ def render_sidebar():
                 },
             },
         )
-
     st.session_state["page"] = selected
     return selected
+
+
 # ----------------- Telas -----------------
 import io  # no topo do seu script
 
@@ -1027,167 +992,6 @@ def mostrar_contas_cadastradas():
             st.write(f"**Refresh Token:** `{refresh_token}`")
 
 
-
-def mostrar_anuncios():
-    st.markdown(
-        """
-        <style>
-        .block-container {
-            padding-top: 0rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.header("🎯 Análise de Anúncios")
-    df = carregar_vendas()
-
-    if df.empty:
-        st.warning("Nenhum dado para exibir.")
-        return
-
-    df['date_adjusted'] = pd.to_datetime(df['date_adjusted'])
-
-    # ========== FILTROS ==========
-    data_ini = st.date_input("De:",  value=df['date_adjusted'].min().date())
-    data_fim = st.date_input("Até:", value=df['date_adjusted'].max().date())
-
-    df_filt = df.loc[
-    (df['date_adjusted'].dt.date >= data_ini) &
-    (df['date_adjusted'].dt.date <= data_fim)
-    ]
-
-    if df_filt.empty:
-        st.warning("Sem registros para os filtros escolhidos.")
-        return
-
-    # 📌 ordena da venda mais nova para a mais antiga
-    df_filt = df_filt.sort_values("date_adjusted", ascending=False)
-
-    title_col = 'item_title'
-    faturamento_col = 'total_amount'
-
-    # 1️⃣ Nuvem de Palavras
-    st.subheader("1️⃣ 🔍 Nuvem de Palavras dos Títulos")
-    text = " ".join(df_filt[title_col])
-    wc = WordCloud(width=600, height=300, background_color="white").generate(text)
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
-        st.image(wc.to_array(), use_column_width=True)
-
-    # 2️⃣ Top 10 Títulos por Faturamento
-    st.subheader("2️⃣ 🌟 Top 10 Títulos por Faturamento")
-    top10_df = (
-        df_filt
-        .groupby(title_col)[faturamento_col]
-        .sum()
-        .reset_index()
-        .sort_values(by=faturamento_col, ascending=False)
-        .head(10)
-    )
-    fig_top10 = px.bar(
-        top10_df,
-        x=title_col,
-        y=faturamento_col,
-        text_auto='.2s',
-        labels={title_col: "Título", faturamento_col: "Faturamento (R$)"},
-        color_discrete_sequence=["#1abc9c"]
-    )
-    st.plotly_chart(fig_top10, use_container_width=True)
-
-    # 4️⃣ Faturamento por Palavra
-    st.subheader("3️⃣ 🧠 Palavras que mais faturam nos Títulos")
-    from collections import Counter
-    word_faturamento = Counter()
-    for _, row in df_filt.iterrows():
-        palavras = str(row[title_col]).lower().split()
-        for p in palavras:
-            word_faturamento[p] += row[faturamento_col]
-
-    df_words = pd.DataFrame(word_faturamento.items(), columns=['palavra', 'faturamento'])
-    df_words = df_words.sort_values(by='faturamento', ascending=False).head(15)
-    fig_words = px.bar(
-        df_words,
-        x='palavra',
-        y='faturamento',
-        text_auto='.2s',
-        labels={'palavra': 'Palavra no Título', 'faturamento': 'Faturamento (R$)'},
-        color_discrete_sequence=["#f39c12"]
-    )
-    st.plotly_chart(fig_words, use_container_width=True)
-
-    # 5️⃣ Faturamento por Comprimento de Título
-    st.subheader("4️⃣ 📏 Faturamento por Comprimento de Título (nº de palavras)")
-    df['title_len'] = df[title_col].str.split().apply(len)
-    df_len_fat = (
-        df
-        .groupby('title_len')[faturamento_col]
-        .sum()
-        .reset_index()
-        .sort_values('title_len')
-    )
-    fig_len = px.bar(
-        df_len_fat,
-        x='title_len',
-        y=faturamento_col,
-        labels={'title_len': 'Nº de Palavras no Título', 'total_amount': 'Faturamento (R$)'},
-        text_auto='.2s',
-        color_discrete_sequence=["#9b59b6"]
-    )
-    st.plotly_chart(fig_len, use_container_width=True)
-
-    # 6️⃣ Títulos com 0 vendas no período filtrado
-    st.subheader("5️⃣ 🚨 Títulos sem Vendas no Período")
-    df_sem_venda = (
-        df_filt[df_filt['quantity'] == 0]
-        .groupby(['item_id', 'item_title'])
-        .agg(total_amount=('total_amount', 'sum'), quantidade=('quantity', 'sum'))
-        .reset_index()
-    )
-    df_sem_venda['link'] = df_sem_venda['item_id'].apply(
-        lambda x: f"https://www.mercadolivre.com.br/anuncio/{x}"
-    )
-    df_sem_venda['link'] = df_sem_venda['link'].apply(
-        lambda url: f"[🔗 Ver Anúncio]({url})"
-    )
-    df_sem_venda['total_amount'] = df_sem_venda['total_amount'].apply(
-        lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    )
-    df_sem_venda['quantidade'] = df_sem_venda['quantidade'].astype(int)
-    st.dataframe(df_sem_venda, use_container_width=True)
-
-    # 7️⃣ Faturamento por item_id com link
-    st.subheader("6️⃣ 📊 Faturamento por MLB (item_id, Título e Link)")
-
-    df_mlb = (
-        df_filt
-        .groupby(['item_id', 'item_title'])[faturamento_col]
-        .sum()
-        .reset_index()
-        .sort_values(by=faturamento_col, ascending=False)
-    )
-    df_mlb['link'] = df_mlb['item_id'].apply(
-        lambda x: f"https://www.mercadolivre.com.br/anuncio/{x}"
-    )
-    df_mlb_display = df_mlb.copy()
-    df_mlb_display['total_amount'] = df_mlb_display['total_amount'].apply(
-        lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    )
-    df_mlb_display['link'] = df_mlb_display['link'].apply(
-        lambda url: f"[🔗 Ver Anúncio]({url})"
-    )
-    st.dataframe(df_mlb_display, use_container_width=True)
-
-    # Exportação CSV (sem formatação)
-    csv = df_mlb.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="⬇️ Exportar CSV",
-        data=csv,
-        file_name="faturamento_por_mlb.csv",
-        mime="text/csv"
-    )
-
 def mostrar_relatorios():
     import time
     import pytz
@@ -1327,222 +1131,6 @@ def mostrar_relatorios():
         "TAXA DA PLATAFORMA","CUSTO DE FRETE","CMV","MARGEM DE CONTRIBUIÇÃO"
     ]
     st.dataframe(df[cols_final], use_container_width=True)
-
-
-
-def mostrar_gestao_sku():
-    st.markdown("""
-        <style>
-        .block-container {
-            padding-top: 0rem;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.header("📦 Gestão de SKU")
-
-    if st.button("🔄 Recarregar Dados"):
-        st.session_state["atualizar_gestao_sku"] = True
-
-    # === Consulta de SKUs únicos ===
-    if st.session_state.get("atualizar_gestao_sku", False) or "df_gestao_sku" not in st.session_state:
-        df = pd.read_sql(text("""
-            SELECT
-                seller_sku,
-                MAX(level1) AS level1,
-                MAX(level2) AS level2,
-                MAX(custo_unitario) AS custo_unitario,
-                MAX(quantity_sku) AS quantity_sku,
-                COUNT(DISTINCT item_id) AS qtde_vendas
-            FROM sales
-            WHERE seller_sku IS NOT NULL
-            GROUP BY seller_sku
-        """), engine)
-        st.session_state["df_gestao_sku"] = df
-        st.session_state["atualizar_gestao_sku"] = False
-    else:
-        df = st.session_state["df_gestao_sku"]
-
-    # === Métricas ===
-    with engine.begin() as conn:
-        vendas_sem_sku = conn.execute(text("SELECT COUNT(*) FROM sales WHERE seller_sku IS NULL")).scalar()
-        mlbs_sem_sku = conn.execute(text("SELECT COUNT(DISTINCT item_id) FROM sales WHERE seller_sku IS NULL")).scalar()
-        sku_incompleto = conn.execute(text("""
-            SELECT COUNT(DISTINCT seller_sku)
-            FROM sales
-            WHERE seller_sku IS NOT NULL AND (
-                level1 IS NULL OR level2 IS NULL OR custo_unitario IS NULL OR quantity_sku IS NULL
-            )
-        """)).scalar()
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("🚫 Vendas sem SKU", vendas_sem_sku)
-    col2.metric("📦 MLBs sem SKU", mlbs_sem_sku)
-    col3.metric("⚠️ SKUs com Cadastro Incompleto", sku_incompleto)
-
-    st.markdown("---")
-    st.markdown("### 🔍 Filtros de Diagnóstico")
-
-    # === Filtros ===
-    colf1, colf2, colf3, colf4, colf5 = st.columns([1.2, 1.2, 1.2, 1.2, 2])
-    op_sku     = colf1.selectbox("Seller SKU", ["Todos", "Nulo", "Não Nulo"])
-    op_level1  = colf2.selectbox("Hierarquia 1", ["Todos", "Nulo", "Não Nulo"])
-    op_level2  = colf3.selectbox("Hierarquia ", ["Todos", "Nulo", "Não Nulo"])
-    op_preco   = colf4.selectbox("Preço Unitário", ["Todos", "Nulo", "Não Nulo"])
-    filtro_txt = colf5.text_input("🔎 Pesquisa (SKU, Hierarquias)")
-
-    # === Aplicar filtros ===
-    if op_sku == "Nulo":
-        df = df[df["seller_sku"].isna()]
-    elif op_sku == "Não Nulo":
-        df = df[df["seller_sku"].notna()]
-    if op_level1 == "Nulo":
-        df = df[df["level1"].isna()]
-    elif op_level1 == "Não Nulo":
-        df = df[df["level1"].notna()]
-    if op_level2 == "Nulo":
-        df = df[df["level2"].isna()]
-    elif op_level2 == "Não Nulo":
-        df = df[df["level2"].notna()]
-    if op_preco == "Nulo":
-        df = df[df["custo_unitario"].isna()]
-    elif op_preco == "Não Nulo":
-        df = df[df["custo_unitario"].notna()]
-    if filtro_txt:
-        filtro_txt = filtro_txt.lower()
-        df = df[df.apply(lambda row: filtro_txt in str(row["seller_sku"]).lower()
-                         or filtro_txt in str(row["level1"]).lower()
-                         or filtro_txt in str(row["level2"]).lower(), axis=1)]
-
-    # === Tabela editável ===
-    st.markdown("### 📝 Editar Cadastro de SKUs")
-
-    colunas_editaveis = ["level1", "level2", "custo_unitario", "quantity_sku"]
-
-    df_editado = st.data_editor(
-        df,
-        use_container_width=True,
-        disabled=[col for col in df.columns if col not in colunas_editaveis],
-        num_rows="dynamic",
-        key="editor_sku"
-    )
-
-    # === Salvar alterações ===
-    if st.button("💾 Salvar Alterações"):
-        try:
-            with engine.begin() as conn:
-                for _, row in df_editado.iterrows():
-                    conn.execute(text("""
-                        INSERT INTO sku (sku, level1, level2, custo_unitario, quantity, date_created)
-                        VALUES (:sku, :level1, :level2, :custo, :quantidade, NOW())
-                        ON CONFLICT (sku) DO UPDATE
-                        SET
-                            level1 = EXCLUDED.level1,
-                            level2 = EXCLUDED.level2,
-                            custo_unitario = EXCLUDED.custo_unitario,
-                            quantity = EXCLUDED.quantity
-                    """), {
-                        "sku": row["seller_sku"],
-                        "level1": row["level1"],
-                        "level2": row["level2"],
-                        "custo": row["custo_unitario"],
-                        "quantidade": row["quantity_sku"]
-                    })
-
-                conn.execute(text("""
-                    UPDATE sales s
-                    SET
-                        level1 = sku.level1,
-                        level2 = sku.level2,
-                        custo_unitario = sku.custo_unitario,
-                        quantity_sku = sku.quantity
-                    FROM (
-                        SELECT DISTINCT ON (sku) * FROM sku
-                        ORDER BY sku, date_created DESC
-                    ) sku
-                    WHERE s.seller_sku = sku.sku
-                """))
-
-            st.success("✅ Alterações salvas com sucesso!")
-            st.session_state["atualizar_gestao_sku"] = True
-            st.rerun()
-
-        except Exception as e:
-            st.error(f"❌ Erro ao salvar alterações: {e}")
-
-
-
-    # 5️⃣ Atualização da base SKU via planilha
-    st.markdown("---")
-    st.markdown("### 📥 Atualizar Base de SKUs via Planilha")
-
-    modelo = pd.DataFrame(columns=["seller_sku", "level1", "level2", "custo_unitario", "quantity"])
-    buffer = io.BytesIO()
-    modelo.to_excel(buffer, index=False, engine="openpyxl")
-    st.download_button(
-        label="⬇️ Baixar Modelo Excel de SKUs",
-        data=buffer.getvalue(),
-        file_name="modelo_sku.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-    arquivo = st.file_uploader("Selecione um arquivo Excel (.xlsx)", type=["xlsx"])
-    if arquivo is not None:
-        df_novo = pd.read_excel(arquivo)
-        colunas_esperadas = {"seller_sku", "level1", "level2", "custo_unitario", "quantity"}
-        if not colunas_esperadas.issubset(df_novo.columns):
-            st.error("❌ A planilha deve conter: seller_sku, level1, level2, custo_unitario, quantity.")
-        else:
-            if st.button("✅ Processar Planilha e Atualizar"):
-                try:
-                    df_novo["quantity"] = df_novo["quantity"].fillna(0).astype(int)
-                    df_novo["custo_unitario"] = df_novo["custo_unitario"].fillna(0).astype(float)
-                    df_novo["seller_sku"] = df_novo["seller_sku"].astype(str).str.strip()
-                    df_novo["level1"] = df_novo["level1"].astype(str).str.strip()
-                    df_novo["level2"] = df_novo["level2"].astype(str).str.strip()
-
-                    with engine.begin() as conn:
-                        for _, row in df_novo.iterrows():
-                            row_dict = row.to_dict()
-                            result = conn.execute(text("""
-                                SELECT 1 FROM sku
-                                WHERE sku = :seller_sku
-                                  AND TRIM(level1) = :level1
-                                  AND TRIM(level2) = :level2
-                                  AND ROUND(CAST(custo_unitario AS numeric), 2) = ROUND(CAST(:custo_unitario AS numeric), 2)
-                                  AND quantity = :quantity
-                                LIMIT 1
-                            """), row_dict).fetchone()
-
-                            if result is None:
-                                conn.execute(text("""
-                                    INSERT INTO sku (sku, level1, level2, custo_unitario, quantity, date_created)
-                                    VALUES (:seller_sku, :level1, :level2, :custo_unitario, :quantity, NOW())
-                                """), row_dict)
-
-                        # Atualizar tabela de vendas
-                        conn.execute(text("""
-                            UPDATE sales s
-                            SET
-                                level1 = sku.level1,
-                                level2 = sku.level2,
-                                custo_unitario = sku.custo_unitario,
-                                quantity_sku = sku.quantity
-                            FROM (
-                                SELECT DISTINCT ON (sku) *
-                                FROM sku
-                                ORDER BY sku, date_created DESC
-                            ) sku
-                            WHERE s.seller_sku = sku.sku
-                        """))
-
-                    # Recarregar métricas e dados
-                    st.session_state["atualizar_gestao_sku"] = True
-                    st.success("✅ Planilha importada, vendas atualizadas, métricas e tabela recarregadas!")
-                    st.rerun()
-
-                except Exception as e:
-                    st.error(f"❌ Erro ao processar: {e}")
 
 def mostrar_expedicao_logistica(df: pd.DataFrame):
     import streamlit as st
@@ -2106,34 +1694,6 @@ def mostrar_expedicao_logistica(df: pd.DataFrame):
     )
     st.markdown(botoes, unsafe_allow_html=True)
 
-def mostrar_gestao_despesas():
-    st.markdown(
-        """
-        <style>
-        .block-container {
-            padding-top: 0rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.header("💰 Gestão de Despesas")
-    st.info("Em breve...")
-
-def mostrar_painel_metas():
-    st.markdown(
-        """
-        <style>
-        .block-container {
-            padding-top: 0rem;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.header("🎯 Painel de Metas")
-    st.info("Em breve...")
-    
 
 # ----------------- Fluxo Principal -----------------
 if "code" in st.query_params:
@@ -2150,13 +1710,3 @@ elif pagina == "Relatórios":
     mostrar_relatorios()
 elif pagina == "Expedição":
     mostrar_expedicao_logistica(df_vendas)
-elif pagina == "Gestão de SKU":
-    mostrar_gestao_sku()
-elif pagina == "Gestão de Despesas":
-    mostrar_gestao_despesas()
-elif pagina == "Painel de Metas":
-    mostrar_painel_metas()
-elif pagina == "Gestão de Anúncios":
-    mostrar_anuncios()
-elif pagina == "Configurações":
-    mostrar_configuracoes()

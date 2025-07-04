@@ -1,7 +1,7 @@
 services:
   - type: web
     name: Cyberdock
-    env: python-3.11
+    env: python
     branch: main
     plan: standard
     buildCommand: "pip install -r requirements.txt"

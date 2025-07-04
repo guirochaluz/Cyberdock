@@ -10,9 +10,9 @@ services:
       - key: DB_URL
         value: "postgresql://cyberdock_db_user:6kJ2cQVY2moRxkgGMTROnilAjf3y0qzT@dpg-d1jtonm3jp1c73epht0g-a.oregon-postgres.render.com/cyberdock_db?sslmode=require"
       - key: ML_CLIENT_ID
-        value: "3597957782423859"
+        value: "5343781526788979"
       - key: ML_CLIENT_SECRET
-        value: "sZOG7DCPZzQhWbqSn4ii6UJx4upEzQMd"
+        value: "XjfB7T8wFqx1aaBI0sesJr8iKrPmU08p"
       - key: BACKEND_URL
         value: "https://cyberdock.onrender.com"
       - key: FRONTEND_URL

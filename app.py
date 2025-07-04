@@ -262,7 +262,7 @@ def render_add_account_button():
       f"&redirect_uri={FRONTEND_URL}/?nexus_auth=success"
     )
     st.markdown(f"""
-      <a href="{login_url}" target="_blank">
+      <a href="{login_url}">
         <button style="
           background-color:#4CAF50;
           color:white;

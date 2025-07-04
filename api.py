@@ -71,7 +71,7 @@ def auth_callback(code: str = Query(None)):
         print(f"⚠️ Erro ao buscar e persistir vendas históricas: {e}")
 
     # 4️⃣ redireciona de volta ao dashboard autenticado
-    return RedirectResponse(f"{FRONTEND_URL}/?nexus_auth=success")
+    return RedirectResponse(f"{FRONTEND_URL}/?cyberdock_auth=success")
 
 @app.post("/auth/refresh")
 def auth_refresh(payload: dict = Body(...)):

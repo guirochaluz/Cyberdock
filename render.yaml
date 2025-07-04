@@ -3,7 +3,7 @@ services:
     name: Cyberdock
     env: python
     branch: main
-    plan: free
+    plan: standard
     buildCommand: "pip install -r requirements.txt"
     startCommand: "./start.sh"
     envVars:

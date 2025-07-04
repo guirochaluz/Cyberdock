@@ -258,7 +258,7 @@ from urllib.parse import urlencode
 def render_add_account_button():
     login_url = f"{BACKEND_URL}/ml-login"
     st.markdown(f"""
-      <a href="{login_url}">
+      <a href="{login_url}" target="_self">
         <button style="
           background-color:#4CAF50;
           color:white;
@@ -271,7 +271,6 @@ def render_add_account_button():
         </button>
       </a>
     """, unsafe_allow_html=True)
-
 
 from streamlit_option_menu import option_menu
 

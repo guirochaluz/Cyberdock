@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: nexus
+    env: python
+    branch: main
+    plan: standard
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "./start.sh"
+    envVars:
+      - key: DB_URL
+        value: "postgresql://admin:pR6aFnyZm6nc1wlCheGVXvjJ5VZrLZQ6@dpg-d0d26gjuibrs73dra1tg-a.oregon-postgres.render.com:5432/contazoom?sslmode=require"
+      - key: ML_CLIENT_ID
+        value: "3597957782423859"
+      - key: ML_CLIENT_SECRET
+        value: "sZOG7DCPZzQhWbqSn4ii6UJx4upEzQMd"
+      - key: BACKEND_URL
+        value: "http://localhost:8501"
+      - key: FRONTEND_URL
+        value: "https://nexusgroup.online"
+      - key: WEB_PASSWORD
+        value: "Giguisa*"
+      - key: COOKIE_SECRET
+        value: "lYXk6saqrn957gFS56qT-zlZdTdASs6_KKykWMYukJ8"

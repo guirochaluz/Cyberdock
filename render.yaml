@@ -14,9 +14,9 @@ services:
       - key: ML_CLIENT_SECRET
         value: "sZOG7DCPZzQhWbqSn4ii6UJx4upEzQMd"
       - key: BACKEND_URL
-        value: "http://localhost:8501"
+        value: "https://cyberdock.onrender.com"
       - key: FRONTEND_URL
-        value: "https://nexusgroup.online"
+        value: "https://cyberdock.onrender.com"
       - key: WEB_PASSWORD
         value: "Giguisa*"
       - key: COOKIE_SECRET

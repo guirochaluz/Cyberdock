@@ -46,7 +46,7 @@ def exchange_code(code: str) -> dict:
         "client_id":     CLIENT_ID,
         "client_secret": CLIENT_SECRET,
         "code":          code,
-        "redirect_uri":  REDIRECT_URI,
+        "redirect_uri": f"{BACKEND_URL}/?cyberdock_auth=success",
     }
     resp = requests.post(TOKEN_URL, data=payload)
     data = resp.json()
